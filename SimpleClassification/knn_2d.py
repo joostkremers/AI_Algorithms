@@ -33,10 +33,24 @@ class DataPoint:
         self.y = y
 
     # Return the distance between this point and another one.
-    def distance(self, other): ...
+    def distance(self, other):
+        return math.sqrt(((self.x - other.x) ** 2) + ((self.y - other.y) ** 2))
 
     # Use K nearest neighbors to set the data point's name.
-    def knn(self, data_points, k): ...
+    def knn(self, data_points, k):
+        top_k_points = sorted(data_points, key=self.distance)[:k]
+        votes = {
+            "a": 0,
+            "b": 0,
+            "c": 0
+        }
+        for point in top_k_points:
+            votes[point.name] += 1
+
+        # Return the key with the highest number of votes. Note that this does
+        # not check for ties. If there is a tie, we simply get the first key
+        # found, I think.
+        self.name = max(votes, key=votes.get)
 
     # Draw the data point.
     def create_oval(self, canvas, bg_color):
