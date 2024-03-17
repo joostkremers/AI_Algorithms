@@ -17,30 +17,26 @@ class DataPoint:
             self.properties.append(int(ch))
 
     # Calculate the distance from this point to the other point.
-    def distance(self, other): ...
+    def distance(self, other):
+        return math.sqrt(
+            sum([(i - j) ** 2 for i, j in zip(self.properties, other.properties)])
+        )
 
-    # Use K nearest neighbors to set the data point's name.
-    def knn(self, data_points, k):
-        # Sort the data points by distance this one.
-        sorted_data_points = sorted(data_points, key=lambda other: self.distance(other))
-
-        # Count the first k votes.
+    # Use K nearest neighbors to predict the data point's name.
+    def predict(self, data_points, k):
+        top_k_points = sorted(data_points, key=self.distance)[:k]
         votes = {}
-        num_votes = 0
-        for point in sorted_data_points:
-            # Add 1 to this name's vote count.
-            if point.name in votes:
-                votes[point.name] += 1
-            else:
-                votes[point.name] = 1
+        for point in top_k_points:
+            votes[point.name] = votes.get(point.name, 0) + 1
 
-            # Count up to k votes.
-            num_votes += 1
-            if num_votes >= k:
-                break
+        # Return the key with the highest number of votes. Note that this does
+        # not check for ties. If there is a tie, we simply get the first key
+        # found, I think.
+        return max(votes, key=votes.get)
 
-        # See which name had the most votes.
-        self.name = max(votes, key=lambda name: votes[name])
+    # Use =predict()= to set the data point's name.
+    def knn(self, data_points, k):
+        self.name = self.predict(data_points, k)
 
 
 # The main App class.
@@ -135,18 +131,36 @@ class App:
 
     # Load the data points.
     def load_data(self):
-        with open("digit_data.txt", "r") as f:
+        with open("resources/digit_data.txt", "r") as f:
             lines = f.readlines()
             self.data_points = []
             for line in lines:
                 self.data_points.append(DataPoint(line))
 
     # Test different values for K.
-    def test_ks(self, min_k, max_k): ...
+    def test_ks(self, min_k, max_k):
+        best = (0, 0.0)
+        for k in range(min_k, max_k + 1):
+            result = self.test_data(k)
+            if result > best[1]:
+                best = (k, result)
+        print(f"Final K: {best[0]}")
+        self.k = best[0]
 
     # Test each of the data points with this value for K.
     # Return the success rate.
-    def test_data(self, k): ...
+    def test_data(self, k):
+        num_successes = 0
+        for data_point in self.data_points:
+            prediction = data_point.predict(self.data_points, k)
+            if prediction == data_point.name:
+                num_successes += 1
+
+        # Print the results.
+        success_rate = round(100 * num_successes / len(self.data_points), 1)
+        self.success_rate_value.set(f"K = {k}, success rate: {success_rate}%")
+        print(f"K = {k}, Success Rate = {success_rate}%")
+        return success_rate
 
     # The user has moved the mouse while drawing.
     # Remove the existing polyline and draw a new one.
