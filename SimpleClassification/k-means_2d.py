@@ -2,6 +2,8 @@ import math
 import tkinter as tk
 from tkinter import messagebox
 import random
+from statistics import mean
+
 
 # Get the text in an Entry widget and
 # convert it to an int.
@@ -55,16 +57,21 @@ class DataPoint:
 
     # Return the distance between this point and another one.
     def distance(self, other):
-        ...
+        return math.sqrt(((self.x - other.x) ** 2) + ((self.y - other.y) ** 2))
 
     # Assign this data point to the closest seed.
     def assign_seed(self, seeds):
-        ...
+        self.seed = min(seeds, key=self.distance)
+        self.set_color(self.seed.color)
 
     # Reposition this seed given its currently assigned data points.
     # Return the distance moved.
     def reposition_seed(self, points):
-        ...
+        old_x, old_y = self.x, self.y
+        self.x = mean(point.x for point in points)
+        self.y = mean(point.y for point in points)
+        self.move()
+        return self.distance(DataPoint(self.canvas, old_x, old_y))
 
     # Move the seed's oval to its current location.
     def move(self):
