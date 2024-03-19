@@ -40,15 +40,17 @@ class DataPoint:
         self.color = color
         self.seed = None
 
-        # Make the DataPoint's oval.
-        self.oval = self.canvas.create_oval(
-            x - self.radius,
-            y - self.radius,
-            x + self.radius,
-            y + self.radius,
-            fill=self.color,
-            outline=self.color,
-        )
+        # Make the DataPoint's oval. If `canvas`` is None, we have a dummy
+        # DataPoint that should not be drawn.
+        if self.canvas:
+            self.oval = self.canvas.create_oval(
+                x - self.radius,
+                y - self.radius,
+                x + self.radius,
+                y + self.radius,
+                fill=self.color,
+                outline=self.color,
+            )
 
     # Set the DataPoint's color.
     def set_color(self, color):
