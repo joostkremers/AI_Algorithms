@@ -73,7 +73,8 @@ class DataPoint:
         self.x = mean(point.x for point in points)
         self.y = mean(point.y for point in points)
         self.move()
-        return self.distance(DataPoint(self.canvas, old_x, old_y))
+        # Use a dummy DataPoint to calculate the distance.
+        return self.distance(DataPoint(None, old_x, old_y))
 
     # Move the seed's oval to its current location.
     def move(self):
