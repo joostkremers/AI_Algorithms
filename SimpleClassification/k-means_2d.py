@@ -238,7 +238,12 @@ class App:
 
         # If we don't already have seeds, make some.
         if len(self.seeds) == 0:
-            ...
+            points = random.sample(self.data_points, k=num_clusters)
+            for i, p in enumerate(points):
+                new_seed = DataPoint(
+                    p.canvas, p.x, p.y, radius=SEED_RADIUS, color=colors[i]
+                )
+                self.seeds.append(new_seed)
 
         # Go!
         print()
@@ -272,11 +277,18 @@ class App:
             self.window.after(get_int(self.delay_entry), self.tick)
 
     # Assign points to their nearest seeds.
-    def assign_points_to_seeds(self): ...
+    def assign_points_to_seeds(self):
+        for p in self.data_points:
+            p.assign_seed(self.seeds)
 
     # Reposition the seeds.
     # Return the largest distance that any seed moves.
-    def reposition_seeds(self): ...
+    def reposition_seeds(self):
+        distances = []
+        for seed in self.seeds:
+            points = [point for point in self.data_points if point.seed == seed]
+            distances.append(seed.reposition_seed(points))
+        return max(distances)
 
     # Remove the seeds so we can try again with the same points.
     def reset(self):
